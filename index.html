@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaristaLink - Premium Coffee Ecosystem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            overflow-x: hidden;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #f5a623 0%, #d4a574 50%, #8b6f47 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .coffee-gradient {
+            background: linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #6b4423 100%);
+        }
+        
+        .glow-orange {
+            box-shadow: 0 0 30px rgba(245, 166, 35, 0.3);
+        }
+        
+        .order-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .order-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .status-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        .steam {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: steam-rise 4s ease-in-out infinite;
+        }
+        
+        @keyframes steam-rise {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-20px) scale(1.1); opacity: 0.1; }
+        }
+        
+        .crypto-btn {
+            background: linear-gradient(135deg, #627eea 0%, #3c5fce 100%);
+        }
+        
+        .mpesa-btn {
+            background: linear-gradient(135deg, #00a650 0%, #008f43 100%);
+        }
+        
+        .web3-btn {
+            background: linear-gradient(135deg, #f6851b 0%, #e2761b 100%);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const { motion, AnimatePresence } = window.Motion;
+        
+        // Icons component
+        const Icon = ({ name, size = 24, className = "" }) => {
+            const icons = {
+                coffee: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
+                wallet: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>,
+                check: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>,
+                star: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+                message: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+                bell: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>,
+                user: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+                arrowRight: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+                clock: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+                eth: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 2L4.5 12.5L12 16L19.5 12.5L12 2ZM4.5 13.5L12 22L19.5 13.5L12 17L4.5 13.5Z"/></svg>
+            };
+            return icons[name] || null;
+        };
+
+        // Mock Data
+        const MENU_ITEMS = [
+            { id: 1, name: "Ethiopian Yirgacheffe", price: 4.50, category: "Single Origin", rating: 4.9, image: "☕", description: "Floral notes with citrus brightness" },
+            { id: 2, name: "Kenyan AA", price: 5.00, category: "Premium", rating: 4.8, image: "🫘", description: "Blackcurrant acidity, full body" },
+            { id: 3, name: "Caramel Macchiato", price: 6.50, category: "Signature", rating: 4.7, image: "🥛", description: "Espresso with vanilla and caramel" },
+            { id: 4, name: "Cold Brew Tonic", price: 5.50, category: "Cold", rating: 4.9, image: "🧊", description: "24hr brew with tonic water" },
+            { id: 5, name: "Oat Milk Flat White", price: 5.50, category: "Milk", rating: 4.6, image: "🌾", description: "Creamy oat milk, double ristretto" },
+            { id: 6, name: "Espresso Doppio", price: 3.50, category: "Classic", rating: 4.8, image: "⚡", description: "Double shot, crema perfecta" }
+        ];
+
+        const MOCK_ORDERS = [
+            { id: 101, customer: "Alex M.", items: ["Ethiopian Yirgacheffe", "Croissant"], total: 8.50, status: "preparing", time: "2 mins ago", table: "A3" },
+            { id: 102, customer: "Sarah K.", items: ["Caramel Macchiato"], total: 6.50, status: "ready", time: "5 mins ago", table: "B1" },
+            { id: 103, customer: "Mike R.", items: ["Cold Brew Tonic", "Oat Milk Flat White"], total: 11.00, status: "pending", time: "Just now", table: "A1" }
+        ];
+
+        // Main App Component
+        const BaristaLink = () => {
+            const [view, setView] = useState('customer'); // 'customer' | 'barista'
+            const [cart, setCart] = useState([]);
+            const [orders, setOrders] = useState(MOCK_ORDERS);
+            const [wallet, setWallet] = useState(null);
+            const [selectedPayment, setSelectedPayment] = useState(null);
+            const [showPaymentModal, setShowPaymentModal] = useState(false);
+            const [comments, setComments] = useState({});
+            const [newComment, setNewComment] = useState("");
+            const [activeTab, setActiveTab] = useState('menu');
+
+            // Web3 Connection
+            const connectWallet = async () => {
+                if (window.ethereum) {
+                    try {
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        setWallet(accounts[0]);
+                    } catch (error) {
+                        console.error("User rejected connection");
+                    }
+                } else {
+                    alert("Please install MetaMask!");
+                }
+            };
+
+            const addToCart = (item) => {
+                setCart([...cart, item]);
+            };
+
+            const removeFromCart = (index) => {
+                const newCart = [...cart];
+                newCart.splice(index, 1);
+                setCart(newCart);
+            };
+
+            const getTotal = () => cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+
+            const placeOrder = () => {
+                if (cart.length === 0) return;
+                
+                const newOrder = {
+                    id: Date.now(),
+                    customer: wallet ? `${wallet.slice(0, 6)}...${wallet.slice(-4)}` : "Guest",
+                    items: cart.map(i => i.name),
+                    total: parseFloat(getTotal()),
+                    status: "pending",
+                    time: "Just now",
+                    table: `A${Math.floor(Math.random() * 9) + 1}`
+                };
+                
+                setOrders([newOrder, ...orders]);
+                setCart([]);
+                setShowPaymentModal(false);
+                setSelectedPayment(null);
+                
+                // Simulate real-time update
+                setTimeout(() => {
+                    setOrders(prev => prev.map(o => 
+                        o.id === newOrder.id ? {...o, status: "preparing"} : o
+                    ));
+                }, 3000);
+            };
+
+            const updateOrderStatus = (orderId, newStatus) => {
+                setOrders(orders.map(o => 
+                    o.id === orderId ? {...o, status: newStatus} : o
+                ));
+            };
+
+            const submitComment = (itemId) => {
+                if (!newComment.trim()) return;
+                setComments({
+                    ...comments,
+                    [itemId]: [...(comments[itemId] || []), { text: newComment, user: wallet || "Anonymous", time: "Just now", rating: 5 }]
+                });
+                setNewComment("");
+            };
+
+            // Payment Modal
+            const PaymentModal = () => (
+                <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                >
+                    <motion.div 
+                        initial={{ scale: 0.9, y: 20 }} 
+                        animate={{ scale: 1, y: 0 }}
+                        className="glass-panel rounded-2xl p-6 max-w-md w-full border border-orange-500/30"
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-2xl font-display font-bold text-white">Complete Payment</h3>
+                            <button onClick={() => setShowPaymentModal(false)} className="text-gray-400 hover:text-white">✕</button>
+                        </div>
+                        
+                        <div className="space-y-4 mb-6">
+                            <div className="flex justify-between text-gray-300 mb-4">
+                                <span>Total Amount</span>
+                                <span className="text-2xl font-bold text-orange-400">${getTotal()}</span>
+                            </div>
+                            
+                            <button 
+                                onClick={() => setSelectedPayment('crypto')}
+                                className={`w-full p-4 rounded-xl flex items-center gap-3 transition-all ${selectedPayment === 'crypto' ? 'crypto-btn text-white ring-2 ring-blue-400' : 'bg-white/5 text-gray-300 hover:bg-white/10'}`}
+                            >
+                                <Icon name="eth" size={24} />
+                                <div className="text-left">
+                                    <div className="font-semibold">Cryptocurrency</div>
+                                    <div className="text-xs opacity-80">ETH, USDC, USDT</div>
+                                </div>
+                                {wallet && <span className="ml-auto text-xs bg-white/20 px-2 py-1 rounded">Connected</span>}
+                            </button>
+                            
+                            <button 
+                                onClick={() => setSelectedPayment('mpesa')}
+                                className={`w-full p-4 rounded-xl flex items-center gap-3 transition-all ${selectedPayment === 'mpesa' ? 'mpesa-btn text-white ring-2 ring-green-400' : 'bg-white/5 text-gray-300 hover:bg-white/10'}`}
+                            >
+                                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-green-600 font-bold text-xs">M</div>
+                                <div className="text-left">
+                                    <div className="font-semibold">M-Pesa</div>
+                                    <div className="text-xs opacity-80">Pay via mobile money</div>
+                                </div>
+                            </button>
+                            
+                            <button 
+                                onClick={() => setSelectedPayment('web3')}
+                                className={`w-full p-4 rounded-xl flex items-center gap-3 transition-all ${selectedPayment === 'web3' ? 'web3-btn text-white ring-2 ring-orange-400' : 'bg-white/5 text-gray-300 hover:bg-white/10'}`}
+                            >
+                                <Icon name="wallet" size={24} />
+                                <div className="text-left">
+                                    <div className="font-semibold">Web3 Wallet</div>
+                                    <div className="text-xs opacity-80">MetaMask, WalletConnect</div>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <button 
+                            onClick={placeOrder}
+                            disabled={!selectedPayment}
+                            className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-orange-500/25 transition-all"
+                        >
+                            Confirm Payment
+                        </button>
+                    </motion.div>
+                </motion.div>
+            );
+
+            // Customer View
+            const CustomerView = () => (
+                <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
+                    {/* Header */}
+                    <header className="sticky top-0 z-40 glass-panel border-b border-white/10">
+                        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center text-2xl">
+                                    ☕
+                                </div>
+                                <div>
+                                    <h1 className="font-display font-bold text-xl gradient-text">BaristaLink</h1>
+                                    <p className="text-xs text-gray-400">Premium Coffee Ecosystem</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={() => setView('barista')}
+                                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                                >
+                                    Switch to Barista Mode
+                                </button>
+                                <button 
+                                    onClick={connectWallet}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${wallet ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-white/10 hover:bg-white/20'}`}
+                                >
+                                    {wallet ? `${wallet.slice(0,6)}...${wallet.slice(-4)}` : "Connect Wallet"}
+                                </button>
+                                <div className="relative">
+                                    <Icon name="coffee" size={24} className="text-orange-400" />
+                                    {cart.length > 0 && (
+                                        <span className="absolute -top-2 -right-2 w-5 h-5 bg-orange-500 rounded-full text-xs flex items-center justify-center font-bold">
+                                            {cart.length}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Menu Section */}
+                        <div className="lg:col-span-2 space-y-6">
+                            <div className="flex gap-4 overflow-x-auto pb-2">
+                                {['All', 'Single Origin', 'Signature', 'Cold', 'Classic'].map(cat => (
+                                    <button 
+                                        key={cat}
+                                        onClick={() => setActiveTab(cat.toLowerCase())}
+                                        className={`px-6 py-2 rounded-full whitespace-nowrap transition-all ${activeTab === cat.toLowerCase() ? 'bg-orange-500 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {MENU_ITEMS.map(item => (
+                                    <motion.div 
+                                        key={item.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="glass-panel rounded-2xl p-5 order-card relative overflow-hidden group"
+                                    >
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div className="text-4xl">{item.image}</div>
+                                            <div className="flex items-center gap-1 text-amber-400">
+                                                <Icon name="star" size={16} className="fill-current" />
+                                                <span className="text-sm font-semibold">{item.rating}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <h3 className="font-display font-bold text-lg mb-1">{item.name}</h3>
+                                        <p className="text-gray-400 text-sm mb-3">{item.description}</p>
+                                        
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-2xl font-bold text-orange-400">${item.price}</span>
+                                            <button 
+                                                onClick={() => addToCart(item)}
+                                                className="px-4 py-2 bg-white/10 hover:bg-orange-500 rounded-lg transition-all flex items-center gap-2 group-hover:bg-orange-500"
+                                            >
+                                                <span className="text-sm font-semibold">Add</span>
+                                                <Icon name="arrowRight" size={16} />
+                                            </button>
+                                        </div>
+
+                                        {/* Comments Section */}
+                                        <div className="mt-4 pt-4 border-t border-white/10">
+                                            <div className="flex items-center gap-2 mb-2 text-sm text-gray-400">
+                                                <Icon name="message" size={14} />
+                                                <span>{(comments[item.id] || []).length} comments</span>
+                                            </div>
+                                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                                                {(comments[item.id] || []).map((comment, idx) => (
+                                                    <div key={idx} className="bg-white/5 rounded-lg p-2 text-xs">
+                                                        <div className="flex justify-between text-gray-400 mb-1">
+                                                            <span>{comment.user.slice(0,10)}...</span>
+                                                            <span>{comment.time}</span>
+                                                        </div>
+                                                        <p className="text-gray-300">{comment.text}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-2 mt-2">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Add feedback..."
+                                                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                                                    value={newComment}
+                                                    onChange={(e) => setNewComment(e.target.value)}
+                                                    onKeyPress={(e) => e.key === 'Enter' && submitComment(item.id)}
+                                                />
+                                                <button 
+                                                    onClick={() => submitComment(item.id)}
+                                                    className="px-3 py-2 bg-orange-500/20 text-orange-400 rounded-lg hover:bg-orange-500/30"
+                                                >
+                                                    Post
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Cart Sidebar */}
+                        <div className="lg:col-span-1">
+                            <div className="sticky top-24 glass-panel rounded-2xl p-6 border border-orange-500/20">
+                                <h2 className="font-display font-bold text-xl mb-4 flex items-center gap-2">
+                                    <Icon name="coffee" size={20} className="text-orange-400" />
+                                    Your Order
+                                </h2>
+                                
+                                {cart.length === 0 ? (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <div className="text-4xl mb-2">🫗</div>
+                                        <p>Your cart is empty</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 mb-6">
+                                        {cart.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-center bg-white/5 rounded-lg p-3">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-2xl">{item.image}</span>
+                                                    <div>
+                                                        <div className="font-medium text-sm">{item.name}</div>
+                                                        <div className="text-orange-400 text-sm">${item.price}</div>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    onClick={() => removeFromCart(idx)}
+                                                    className="text-red-400 hover:text-red-300 p-1"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                {cart.length > 0 && (
+                                    <>
+                                        <div className="border-t border-white/10 pt-4 mb-4">
+                                            <div className="flex justify-between items-center text-lg font-bold">
+                                                <span>Total</span>
+                                                <span className="text-orange-400">${getTotal()}</span>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => setShowPaymentModal(true)}
+                                            className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-600 rounded-xl font-bold text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all transform hover:scale-[1.02]"
+                                        >
+                                            Proceed to Payment
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <AnimatePresence>
+                        {showPaymentModal && <PaymentModal />}
+                    </AnimatePresence>
+                </div>
+            );
+
+            // Barista Dashboard
+            const BaristaView = () => (
+                <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
+                    <header className="glass-panel border-b border-white/10">
+                        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                                    <Icon name="user" size={24} className="text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="font-display font-bold text-xl text-white">Barista Station</h1>
+                                    <p className="text-xs text-gray-400">Order Management System</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={() => setView('customer')}
+                                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                                >
+                                    Switch to Customer View
+                                </button>
+                                <div className="relative">
+                                    <Icon name="bell" size={24} className="text-gray-400" />
+                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div className="max-w-7xl mx-auto px-4 py-8">
+                        {/* Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                            {[
+                                { label: "Pending", value: orders.filter(o => o.status === 'pending').length, color: "yellow" },
+                                { label: "Preparing", value: orders.filter(o => o.status === 'preparing').length, color: "blue" },
+                                { label: "Ready", value: orders.filter(o => o.status === 'ready').length, color: "green" },
+                                { label: "Total Revenue", value: `$${orders.reduce((a,b) => a + b.total, 0).toFixed(2)}`, color: "orange" }
+                            ].map((stat, idx) => (
+                                <div key={idx} className="glass-panel rounded-xl p-4 border border-white/5">
+                                    <div className={`text-3xl font-bold text-${stat.color}-400 mb-1`}>{stat.value}</div>
+                                    <div className="text-gray-400 text-sm">{stat.label}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Orders Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {orders.map(order => (
+                                <motion.div 
+                                    key={order.id}
+                                    layout
+                                    className={`glass-panel rounded-2xl p-5 border-l-4 ${
+                                        order.status === 'pending' ? 'border-yellow-500' :
+                                        order.status === 'preparing' ? 'border-blue-500' :
+                                        'border-green-500'
+                                    } relative overflow-hidden`}
+                                >
+                                    {order.status === 'ready' && (
+                                        <div className="absolute top-2 right-2">
+                                            <div className="relative">
+                                                <div className="w-3 h-3 bg-green-500 rounded-full status-pulse"></div>
+                                                <div className="absolute inset-0 w-3 h-3 bg-green-500 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-2xl">👤</span>
+                                                <span className="font-bold">{order.customer}</span>
+                                            </div>
+                                            <div className="text-sm text-gray-400 flex items-center gap-1">
+                                                <Icon name="clock" size={14} />
+                                                {order.time} • Table {order.table}
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-2xl font-bold text-orange-400">${order.total}</div>
+                                            <div className={`text-xs uppercase tracking-wider font-semibold ${
+                                                order.status === 'pending' ? 'text-yellow-400' :
+                                                order.status === 'preparing' ? 'text-blue-400' :
+                                                'text-green-400'
+                                            }`}>
+                                                {order.status}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-2 mb-4">
+                                        {order.items.map((item, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 text-sm text-gray-300 bg-white/5 rounded-lg p-2">
+                                                <span>☕</span>
+                                                {item}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="flex gap-2">
+                                        {order.status === 'pending' && (
+                                            <button 
+                                                onClick={() => updateOrderStatus(order.id, 'preparing')}
+                                                className="flex-1 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all text-sm font-semibold"
+                                            >
+                                                Start Preparing
+                                            </button>
+                                        )}
+                                        {order.status === 'preparing' && (
+                                            <button 
+                                                onClick={() => updateOrderStatus(order.id, 'ready')}
+                                                className="flex-1 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-all text-sm font-semibold flex items-center justify-center gap-2"
+                                            >
+                                                <Icon name="check" size={16} />
+                                                Mark Ready
+                                            </button>
+                                        )}
+                                        {order.status === 'ready' && (
+                                            <button 
+                                                onClick={() => updateOrderStatus(order.id, 'completed')}
+                                                className="flex-1 py-2 bg-gray-500/20 text-gray-400 rounded-lg hover:bg-gray-500/30 transition-all text-sm font-semibold"
+                                            >
+                                                Complete Order
+                                            </button>
+                                        )}
+                                    </div>
+                                    
+                                    {order.status === 'ready' && (
+                                        <div className="mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
+                                            <span className="text-green-400 text-xs font-semibold animate-pulse">
+                                                🔔 Notify Waiter: Ready for Pickup
+                                            </span>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            return view === 'customer' ? <CustomerView /> : <BaristaView />;
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<BaristaLink />);
+    </script>
+</body>
+</html>

@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <header>
+  <h1>☕ Barista-Pro</h1>
+  <p>Your premium coffee assistant</p>
+        <div id="progressBar">
+  <div id="progress"></div>
+</div>
+</header>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BaristaLink - Premium Coffee Ecosystem</title>
@@ -89,6 +97,14 @@
             background: linear-gradient(135deg, #f6851b 0%, #e2761b 100%);
         }
     </style>
+    <head>
+  <meta charset="UTF-8">
+  <title>Barista-Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Progress bar, wizard, dashboard styles go here */
+  </style>
+</head>
 </head>
 <body>
     <div id="root"></div>
@@ -611,5 +627,18 @@
 
         ReactDOM.createRoot(document.getElementById('root')).render(<BaristaLink />);
     </script>
+    <script>
+  // Wizard navigation
+  function nextStep(step) { ... }
+
+  // Payment functions
+  function payMpesa() { ... }
+  function payStripe() { ... }
+  function payCrypto() { ... }
+
+  // Dashboard logic
+  function addOrder(coffee, size, extras) { ... }
+  function updateStatus(btn) { ... }
+</script>
 </body>
 </html>
